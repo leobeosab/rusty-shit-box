@@ -16,21 +16,13 @@ pub fn start() -> Result<(), JsValue> {
     let vert_shader = compile_shader(
         &context,
         WebGlRenderingContext::VERTEX_SHADER,
-        r#"
-        attribute vec4 position;
-        void main() {
-            gl_Position = position;
-        }
-    "#,
+        include_str!("shaders/vert.vs"),
+
     )?;
     let frag_shader = compile_shader(
         &context,
         WebGlRenderingContext::FRAGMENT_SHADER,
-        r#"
-        void main() {
-            gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-        }
-    "#,
+        include_str!("shaders/frag.fs"),
     )?;
     let program = link_program(&context, &vert_shader, &frag_shader)?;
     context.use_program(Some(&program));

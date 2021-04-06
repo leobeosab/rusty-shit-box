@@ -1,36 +1,32 @@
+mod engine;
+
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
+use crate::engine::*;
 use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlShader};
 
 #[wasm_bindgen(start)]
 pub fn start() -> Result<(), JsValue> {
-    let document = web_sys::window().unwrap().document().unwrap();
-    let canvas = document.get_element_by_id("canvas").unwrap();
-    let canvas: web_sys::HtmlCanvasElement = canvas.dyn_into::<web_sys::HtmlCanvasElement>()?;
-
-    let context = canvas
-        .get_context("webgl")?
-        .unwrap()
-        .dyn_into::<WebGlRenderingContext>()?;
+    let ENGINE: Engine = initialize_game_engine().expect("Rip");
 
     let vert_shader = compile_shader(
-        &context,
+        &(ENGINE.gl_context),
         WebGlRenderingContext::VERTEX_SHADER,
         include_str!("shaders/vert.vs"),
 
     )?;
     let frag_shader = compile_shader(
-        &context,
+        &(ENGINE.gl_context),
         WebGlRenderingContext::FRAGMENT_SHADER,
         include_str!("shaders/frag.fs"),
     )?;
-    let program = link_program(&context, &vert_shader, &frag_shader)?;
-    context.use_program(Some(&program));
+    let program = link_program(&(ENGINE.gl_context), &vert_shader, &frag_shader)?;
+    (ENGINE.gl_context).use_program(Some(&program));
 
     let vertices: [f32; 9] = [-0.7, -0.7, 0.0, 0.7, -0.7, 0.0, 0.0, 0.7, 0.0];
 
-    let buffer = context.create_buffer().ok_or("failed to create buffer")?;
-    context.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(&buffer));
+    let buffer = (ENGINE.gl_context).create_buffer().ok_or("failed to create buffer")?;
+    (ENGINE.gl_context).bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(&buffer));
 
     // Note that `Float32Array::view` is somewhat dangerous (hence the
     // `unsafe`!). This is creating a raw view into our module's
@@ -43,20 +39,20 @@ pub fn start() -> Result<(), JsValue> {
     unsafe {
         let vert_array = js_sys::Float32Array::view(&vertices);
 
-        context.buffer_data_with_array_buffer_view(
+        (ENGINE.gl_context).buffer_data_with_array_buffer_view(
             WebGlRenderingContext::ARRAY_BUFFER,
             &vert_array,
             WebGlRenderingContext::STATIC_DRAW,
         );
     }
 
-    context.vertex_attrib_pointer_with_i32(0, 3, WebGlRenderingContext::FLOAT, false, 0, 0);
-    context.enable_vertex_attrib_array(0);
+    (ENGINE.gl_context).vertex_attrib_pointer_with_i32(0, 3, WebGlRenderingContext::FLOAT, false, 0, 0);
+    (ENGINE.gl_context).enable_vertex_attrib_array(0);
 
-    context.clear_color(0.0, 0.0, 0.0, 1.0);
-    context.clear(WebGlRenderingContext::COLOR_BUFFER_BIT);
+    (ENGINE.gl_context).clear_color(0.0, 1.0, 0.0, 1.0);
+    (ENGINE.gl_context).clear(WebGlRenderingContext::COLOR_BUFFER_BIT);
 
-    context.draw_arrays(
+    (ENGINE.gl_context).draw_arrays(
         WebGlRenderingContext::TRIANGLES,
         0,
         (vertices.len() / 3) as i32,

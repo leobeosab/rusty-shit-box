@@ -1,5 +1,7 @@
-use web_sys::WebGlRenderingContext;
+pub(crate) mod shaders;
+
 use wasm_bindgen::{JsCast, JsValue};
+use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlShader};
 use std::error::Error;
 
 pub struct Engine {

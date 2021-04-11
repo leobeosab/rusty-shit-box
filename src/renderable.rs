@@ -1,6 +1,4 @@
-use wasm_bindgen::{JsCast, JsValue};
-use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlShader};
-use std::error::Error;
+use web_sys::{WebGlRenderingContext};
 use crate::engine::Engine;
 
 pub struct Renderable {

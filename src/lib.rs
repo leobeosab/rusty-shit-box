@@ -4,10 +4,7 @@ mod renderable;
 use console_error_panic_hook;
 
 use wasm_bindgen::prelude::*;
-use wasm_bindgen::JsCast;
 use crate::engine::*;
-use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlShader};
-use std::collections::HashMap;
 use crate::renderable::Renderable;
 
 #[wasm_bindgen]
@@ -26,7 +23,7 @@ impl Application {
         // TODO:// put the error handling back
         engine.initialize_shaders("simple_shader", include_str!("./shaders/frag.fs"), include_str!("./shaders/vert.vs"));
 
-        let mut renderables: Vec<Renderable> = Vec::new();
+        let renderables: Vec<Renderable> = Vec::new();
 
         let mut app = Application{
             engine,

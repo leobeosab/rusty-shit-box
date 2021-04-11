@@ -1,8 +1,7 @@
 pub(crate) mod shaders;
 
 use wasm_bindgen::{JsCast, JsValue};
-use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlShader};
-use std::error::Error;
+use web_sys::{WebGlProgram, WebGlRenderingContext};
 use std::collections::HashMap;
 
 pub struct Engine {

@@ -28,7 +28,7 @@ impl Engine {
         }
     }
 
-    pub(crate) fn initialize_shaders(&self, frag_source: &str, vert_source: &str) -> Result<JsValue, String> {
+    pub(crate) fn initialize_shaders(&self, frag_source: &str, vert_source: &str) -> Result<WebGlProgram, String> {
         let vert_shader = shaders::compile_shader(
             &self.gl_context,
             WebGlRenderingContext::VERTEX_SHADER,
@@ -41,9 +41,13 @@ impl Engine {
         )?;
 
         let program = shaders::link_program(&self.gl_context, &vert_shader, &frag_shader)?;
-        self.gl_context.use_program(Some(&program));
 
-        Ok(self.gl_context.get_program_parameter(&program, WebGlRenderingContext::LINK_STATUS))
+        Ok(program)
+    }
+
+    pub(crate) fn activate_shader(&self, program: &WebGlProgram) {
+        self.gl_context.use_program(Some(&program));
+        self.gl_context.enable_vertex_attrib_array(0);
     }
 
     pub(crate) fn draw(&self, vertex_array: &[f32]) -> Result<JsValue, String> {
@@ -61,7 +65,6 @@ impl Engine {
         }
 
         self.gl_context.vertex_attrib_pointer_with_i32(0, 3, WebGlRenderingContext::FLOAT, false, 0, 0);
-        self.gl_context.enable_vertex_attrib_array(0);
 
         self.gl_context.clear_color(0.0, 1.0, 0.0, 1.0);
         self.gl_context.clear(WebGlRenderingContext::COLOR_BUFFER_BIT);

@@ -3,9 +3,11 @@ pub(crate) mod shaders;
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlShader};
 use std::error::Error;
+use std::collections::HashMap;
 
 pub struct Engine {
     pub(crate) gl_context: WebGlRenderingContext,
+    shaders: HashMap<String, WebGlProgram>,
 }
 
 impl Engine {
@@ -22,27 +24,39 @@ impl Engine {
         if true {
             Ok(Engine {
                 gl_context: context,
+                shaders: HashMap::new()
             })
         } else {
             Err(JsValue::from("fuck me".to_string()))
         }
     }
 
-    pub(crate) fn initialize_shaders(&self, frag_source: &str, vert_source: &str) -> Result<WebGlProgram, String> {
+    pub(crate) fn initialize_shaders(&mut self, shader_name: &str, frag_source: &str, vert_source: &str) {
         let vert_shader = shaders::compile_shader(
             &self.gl_context,
             WebGlRenderingContext::VERTEX_SHADER,
             vert_source
-        )?;
+        ).unwrap();
         let frag_shader = shaders::compile_shader(
             &self.gl_context,
             WebGlRenderingContext::FRAGMENT_SHADER,
             frag_source
-        )?;
+        ).unwrap();
 
-        let program = shaders::link_program(&self.gl_context, &vert_shader, &frag_shader)?;
+        let program = shaders::link_program(&self.gl_context, &vert_shader, &frag_shader).unwrap();
 
-        Ok(program)
+        self.shaders.insert(String::from(shader_name), program);
+    }
+
+    pub(crate) fn fetch_shader(&self, shader_name: &str) -> &WebGlProgram {
+        let shader;
+
+        match self.shaders.get(shader_name) {
+            Some(s) => shader = s,
+            None => panic!("Could not find shader {}", shader_name)
+        }
+
+        shader
     }
 
     pub(crate) fn activate_shader(&self, program: &WebGlProgram) {
@@ -68,12 +82,6 @@ impl Engine {
 
         self.gl_context.clear_color(0.0, 1.0, 0.0, 1.0);
         self.gl_context.clear(WebGlRenderingContext::COLOR_BUFFER_BIT);
-
-        self.gl_context.draw_arrays(
-            WebGlRenderingContext::TRIANGLES,
-            0,
-            (vertex_array.len() / 3) as i32,
-        );
 
         Ok(JsValue::from("Success!"))
     }

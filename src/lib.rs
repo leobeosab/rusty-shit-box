@@ -1,4 +1,5 @@
 mod engine;
+mod renderable;
 
 use console_error_panic_hook;
 
@@ -7,11 +8,12 @@ use wasm_bindgen::JsCast;
 use crate::engine::*;
 use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlShader};
 use std::collections::HashMap;
+use crate::renderable::Renderable;
 
 #[wasm_bindgen]
 pub struct Application {
     engine: Engine,
-    shaders: HashMap<String, WebGlProgram>,
+    renderables: Vec<Renderable>,
 }
 
 #[wasm_bindgen]
@@ -20,19 +22,20 @@ impl Application {
     pub fn new() -> Application {
         console_error_panic_hook::set_once();
 
-        let engine = Engine::initialize_game_engine().expect("rip");
-        let shader_program = engine.initialize_shaders( include_str!("./shaders/frag.fs"), include_str!("./shaders/vert.vs")).unwrap();
+        let mut engine = Engine::initialize_game_engine().expect("rip");
+        // TODO:// put the error handling back
+        engine.initialize_shaders("simple_shader", include_str!("./shaders/frag.fs"), include_str!("./shaders/vert.vs"));
 
-        let mut shader_map: HashMap<String, WebGlProgram> = HashMap::new();
-        shader_map.insert(String::from("simpleShader"), shader_program);
+        let mut renderables: Vec<Renderable> = Vec::new();
 
-        let app = Application{
+        let mut app = Application{
             engine,
-            shaders: shader_map
+            renderables
         };
 
-        // Gross? I need to know more rust
-        app.engine.activate_shader(app.fetch_shader("simpleShader"));
+        // Just getting this working -- gross
+        let dump_triangle = Renderable::new(String::from("simple_shader"));
+        app.renderables.push(dump_triangle);
 
         app
     }
@@ -41,17 +44,10 @@ impl Application {
     pub fn render(&self) {
         let vertices: [f32; 9] = [-0.7, -0.7, 0.0, 0.7, -0.7, 0.0, 0.0, 0.7, 0.0];
         self.engine.draw(&vertices);
-    }
 
-    fn fetch_shader(&self, key: &str) -> &WebGlProgram {
-        let shader;
-
-        match self.shaders.get(key) {
-            Some(s) => shader = s,
-            None => panic!("Could not find shader {}", key)
+        for obj in self.renderables.iter() {
+            obj.draw(&self.engine);
         }
-
-        shader
     }
 }
 

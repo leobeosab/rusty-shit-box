@@ -42,6 +42,7 @@ impl Engine {
             frag_source
         ).unwrap();
 
+
         let program = shaders::link_program(&self.gl_context, &vert_shader, &frag_shader).unwrap();
 
         self.shaders.insert(String::from(shader_name), program);

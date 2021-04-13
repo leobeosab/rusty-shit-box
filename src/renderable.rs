@@ -21,17 +21,6 @@ impl Renderable {
     // TODO:// remove dependency on engine crate
     // It doesn't look good to have the child depend on the parent
     pub fn draw(&self, engine: &Engine) {
-        let program = engine.fetch_shader(&self.shader_name);
-        engine.activate_shader(program);
 
-        let transform_location = engine.gl_context.get_uniform_location(program, "modelTransform").unwrap();
-        // Load the transformation in
-        engine.gl_context.uniform_matrix4fv_with_f32_array(Some(&transform_location), true, &self.transform);
-
-        engine.gl_context.draw_arrays(
-            WebGlRenderingContext::TRIANGLES,
-            0,
-            3 as i32,
-        )
     }
 }

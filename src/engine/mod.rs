@@ -3,6 +3,7 @@ pub(crate) mod shaders;
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::{WebGlProgram, WebGlRenderingContext};
 use std::collections::HashMap;
+use nalgebra::{Matrix4};
 
 pub struct Engine {
     pub(crate) gl_context: WebGlRenderingContext,
@@ -61,12 +62,32 @@ impl Engine {
 
     pub(crate) fn activate_shader(&self, program: &WebGlProgram) {
         self.gl_context.use_program(Some(&program));
-        self.gl_context.enable_vertex_attrib_array(0);
+
+        self.gl_context.enable(WebGlRenderingContext::DEPTH_TEST);
     }
 
-    pub(crate) fn draw(&self, vertex_array: &[f32]) -> Result<JsValue, String> {
-        let buffer = self.gl_context.create_buffer().ok_or("failed to create buffer")?;
-        self.gl_context.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(&buffer));
+    pub(crate) fn draw(&self, vertex_array: &[f32], element_array: &[u16]) -> Result<JsValue, String> {
+        let program = self.fetch_shader("simple_shader");
+        self.activate_shader(program);
+
+        let transform = Matrix4::new(
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            1.0, 1.0, 1.0, 1.0,
+            0.0, -0.1, 0.0, 1.0
+        );
+
+
+        let mut model_array: [f32; 16] = [0.; 16];
+        model_array.copy_from_slice(transform.as_slice());
+
+        let transform_location = self.gl_context.get_uniform_location(program, "modelTransform").unwrap();
+        // Load the transformation in
+        self.gl_context.uniform_matrix4fv_with_f32_array(Some(&transform_location), false, &model_array);
+
+        let vertices_buffer = self.gl_context.create_buffer().ok_or("failed to create buffer")?;
+        self.gl_context.enable_vertex_attrib_array(0);
+        self.gl_context.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(&vertices_buffer));
 
         unsafe {
             let vert_array = js_sys::Float32Array::view(vertex_array);
@@ -79,6 +100,27 @@ impl Engine {
         }
 
         self.gl_context.vertex_attrib_pointer_with_i32(0, 3, WebGlRenderingContext::FLOAT, false, 0, 0);
+
+        let elements_buffer = self.gl_context.create_buffer().ok_or("failed to create elements buffer")?;
+        self.gl_context.bind_buffer(WebGlRenderingContext::ELEMENT_ARRAY_BUFFER, Some(&elements_buffer));
+
+        unsafe {
+            let ele_array = js_sys::Uint16Array::view(element_array);
+
+            self.gl_context.buffer_data_with_array_buffer_view(
+                WebGlRenderingContext::ELEMENT_ARRAY_BUFFER,
+                &ele_array,
+                WebGlRenderingContext::STATIC_DRAW,
+            )
+        }
+
+
+        self.gl_context.draw_elements_with_i32(
+            WebGlRenderingContext::TRIANGLES,
+            36,
+            WebGlRenderingContext::UNSIGNED_SHORT,
+            0
+        );
 
         self.gl_context.clear_color(0.0, 1.0, 0.0, 1.0);
         self.gl_context.clear(WebGlRenderingContext::COLOR_BUFFER_BIT);

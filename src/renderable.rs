@@ -1,6 +1,5 @@
 use web_sys::{WebGlRenderingContext};
 use crate::engine::Engine;
-use nalgebra::Matrix4;
 
 pub struct Renderable {
     shader_name: String,

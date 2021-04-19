@@ -127,6 +127,7 @@ impl Engine {
         );
 
         let vertex_position = self.gl_context.get_attrib_location(&program, "aVertexPosition");
+        let vertex_color = self.gl_context.get_attrib_location(&program, "aVertexColor");
         let projection_matrix = self.gl_context.get_uniform_location(&program, "uProjectionMatrix").unwrap();
         let model_view_matrix = self.gl_context.get_uniform_location(&program, "uModelViewMatrix").unwrap();
 
@@ -143,6 +144,18 @@ impl Engine {
         );
 
         self.gl_context.enable_vertex_attrib_array(vertex_position as u32);
+
+        self.gl_context.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(&buffers.color));
+        self.gl_context.vertex_attrib_pointer_with_f64(
+            vertex_color as u32,
+            4,
+            WebGlRenderingContext::FLOAT,
+            false,
+            0,
+            0.0
+        );
+
+        self.gl_context.enable_vertex_attrib_array(vertex_color as u32);
 
         self.gl_context.bind_buffer(WebGlRenderingContext::ELEMENT_ARRAY_BUFFER, Some(&buffers.indices));
         self.activate_shader(program);

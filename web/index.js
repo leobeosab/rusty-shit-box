@@ -12,7 +12,7 @@ const render = () => {
     application.render(rotation);
     window.requestAnimationFrame(render);
 
-    rotation += 0.0007;
+    rotation += 0.02;
 
     time = Date.now();
 }

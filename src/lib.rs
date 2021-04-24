@@ -8,12 +8,7 @@ use crate::renderable::Renderable;
 
 mod engine;
 mod renderable;
-
-macro_rules! log {
-    ( $( $t:tt )* ) => {
-        web_sys::console::log_1(&format!( $( $t )* ).into());
-    }
-}
+mod utils;
 
 #[wasm_bindgen]
 pub struct Application {

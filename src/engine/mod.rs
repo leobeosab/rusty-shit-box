@@ -1,5 +1,6 @@
 pub(crate) mod shaders;
 
+use crate::log;
 use wasm_bindgen::{JsCast, JsValue};
 use wasm_bindgen::prelude::*;
 use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlBuffer};
@@ -12,14 +13,6 @@ pub struct Engine {
     shaders: HashMap<String, WebGlProgram>,
 }
 
-
-#[wasm_bindgen]
-extern "C" {
-    // Use `js_namespace` here to bind `console.log(..)` instead of just
-    // `log(..)`
-    #[wasm_bindgen(js_namespace = console)]
-    fn log(s: &str);
-}
 impl Engine {
      pub(crate) fn initialize_game_engine() -> Result<Engine, JsValue> {
         let document = web_sys::window().unwrap().document().unwrap();
@@ -178,8 +171,6 @@ impl Engine {
             WebGlRenderingContext::UNSIGNED_SHORT,
             0.0
         );
-
-        log(format!("model_view_matrix: {:?}", internal_model_view_matrix).as_str());
 
         Ok(JsValue::from("Success!"))
     }

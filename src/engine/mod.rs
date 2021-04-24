@@ -24,6 +24,8 @@ impl Engine {
             .unwrap()
             .dyn_into::<WebGlRenderingContext>()?;
 
+        context.viewport(0, 0, canvas.width() as i32, canvas.height() as i32);
+
         let camera = Camera::new(1.0, 0.1, 100.0, 45.0);
 
         if true {

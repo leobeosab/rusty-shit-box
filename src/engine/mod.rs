@@ -1,4 +1,5 @@
 pub(crate) mod shaders;
+mod camera;
 
 use crate::log;
 use wasm_bindgen::{JsCast, JsValue};
@@ -7,9 +8,11 @@ use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlBuffer};
 use std::collections::HashMap;
 use gl_matrix::mat4;
 use gl_matrix::mat3::projection;
+use crate::engine::camera::Camera;
 
 pub struct Engine {
     pub(crate) gl_context: WebGlRenderingContext,
+    camera: Camera,
     shaders: HashMap<String, WebGlProgram>,
 }
 
@@ -24,10 +27,12 @@ impl Engine {
             .unwrap()
             .dyn_into::<WebGlRenderingContext>()?;
 
+        let camera = Camera::new(1.0, 0.1, 100.0, 45.0);
 
         if true {
             Ok(Engine {
                 gl_context: context,
+                camera,
                 shaders: HashMap::new(),
             })
         } else {
@@ -76,20 +81,6 @@ impl Engine {
         self.gl_context.clear(WebGlRenderingContext::COLOR_BUFFER_BIT | WebGlRenderingContext::DEPTH_BUFFER_BIT);
 
         let program = self.fetch_shader("simple_shader");
-
-        let field_of_view = 45.0 * std::f64::consts::PI / 180.0; // in radians
-        let aspect =  800 / 800;
-        let z_near = 0.1;
-        let z_far = 100.0;
-        let mut internal_projection_matrix = mat4::create();
-
-        mat4::perspective(
-            &mut internal_projection_matrix,
-            field_of_view as f32,
-            aspect as f32,
-            z_near,
-            Some(z_far)
-        );
 
         let mut internal_model_view_matrix = mat4::create();
         let mut internal_model_view_matrix_2 = internal_model_view_matrix.clone();
@@ -153,10 +144,11 @@ impl Engine {
         self.gl_context.bind_buffer(WebGlRenderingContext::ELEMENT_ARRAY_BUFFER, Some(&buffers.indices));
         self.activate_shader(program);
 
+        // Setup the camera matrix
         self.gl_context.uniform_matrix4fv_with_f32_array(
             Some(&projection_matrix),
             false,
-            &internal_projection_matrix
+            &self.camera.projection_matrix,
         );
 
         self.gl_context.uniform_matrix4fv_with_f32_array(

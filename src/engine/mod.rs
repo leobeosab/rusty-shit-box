@@ -1,13 +1,10 @@
 pub(crate) mod shaders;
 mod camera;
 
-use crate::log;
 use wasm_bindgen::{JsCast, JsValue};
-use wasm_bindgen::prelude::*;
 use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlBuffer};
 use std::collections::HashMap;
 use gl_matrix::mat4;
-use gl_matrix::mat3::projection;
 use crate::engine::camera::Camera;
 
 pub struct Engine {

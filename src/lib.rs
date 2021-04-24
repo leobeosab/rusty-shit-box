@@ -30,14 +30,10 @@ impl Application {
 
         let renderables: Vec<Renderable> = Vec::new();
 
-        let mut app = Application{
+        let app = Application{
             engine,
             renderables
         };
-
-        let mut model_array: [f32; 16] = [0.; 16];
-
-        let dump_triangle = Renderable::new(String::from("simple_shader"), model_array);
 
         app
     }

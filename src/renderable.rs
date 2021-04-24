@@ -1,4 +1,3 @@
-use web_sys::{WebGlRenderingContext};
 use crate::engine::Engine;
 
 pub struct Renderable {
@@ -19,7 +18,7 @@ impl Renderable {
 
     // TODO:// remove dependency on engine crate
     // It doesn't look good to have the child depend on the parent
-    pub fn draw(&self, engine: &Engine) {
+    pub fn draw(&self, _engine: &Engine) {
 
     }
 }

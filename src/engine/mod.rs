@@ -1,11 +1,17 @@
 pub(crate) mod shaders;
+mod camera;
+mod cube;
 
 use wasm_bindgen::{JsCast, JsValue};
-use web_sys::{WebGlProgram, WebGlRenderingContext};
+use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlBuffer};
 use std::collections::HashMap;
+use gl_matrix::mat4;
+use crate::engine::camera::Camera;
+use crate::engine::cube::Cube;
 
 pub struct Engine {
     pub(crate) gl_context: WebGlRenderingContext,
+    camera: Camera,
     shaders: HashMap<String, WebGlProgram>,
 }
 
@@ -20,10 +26,15 @@ impl Engine {
             .unwrap()
             .dyn_into::<WebGlRenderingContext>()?;
 
+        context.viewport(0, 0, canvas.width() as i32, canvas.height() as i32);
+
+        let camera = Camera::new(1.0, 0.1, 100.0, 45.0);
+
         if true {
             Ok(Engine {
                 gl_context: context,
-                shaders: HashMap::new()
+                camera,
+                shaders: HashMap::new(),
             })
         } else {
             Err(JsValue::from("fuck me".to_string()))
@@ -42,6 +53,7 @@ impl Engine {
             frag_source
         ).unwrap();
 
+
         let program = shaders::link_program(&self.gl_context, &vert_shader, &frag_shader).unwrap();
 
         self.shaders.insert(String::from(shader_name), program);
@@ -59,30 +71,42 @@ impl Engine {
     }
 
     pub(crate) fn activate_shader(&self, program: &WebGlProgram) {
-        self.gl_context.use_program(Some(&program));
-        self.gl_context.enable_vertex_attrib_array(0);
+        self.gl_context.use_program(Some(program));
     }
 
-    pub(crate) fn draw(&self, vertex_array: &[f32]) -> Result<JsValue, String> {
-        let buffer = self.gl_context.create_buffer().ok_or("failed to create buffer")?;
-        self.gl_context.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(&buffer));
+    pub(crate) fn draw(&self, rotation: f32) -> Result<JsValue, String> {
+        self.gl_context.clear_color(0.0, 0.0, 0.0, 1.0);
+        self.gl_context.clear_depth(1.0);
+        self.gl_context.enable(WebGlRenderingContext::DEPTH_TEST);
+        self.gl_context.depth_func(WebGlRenderingContext::LEQUAL);
+        self.gl_context.clear(WebGlRenderingContext::COLOR_BUFFER_BIT | WebGlRenderingContext::DEPTH_BUFFER_BIT);
 
-        unsafe {
-            let vert_array = js_sys::Float32Array::view(vertex_array);
+        let program = self.fetch_shader("simple_shader");
+        self.gl_context.use_program(Some(program));
 
-            (self.gl_context).buffer_data_with_array_buffer_view(
-                WebGlRenderingContext::ARRAY_BUFFER,
-                &vert_array,
-                WebGlRenderingContext::STATIC_DRAW,
-            );
-        }
+        let projection_matrix = self.gl_context.get_uniform_location(&program, "uProjectionMatrix").unwrap();
 
-        self.gl_context.vertex_attrib_pointer_with_i32(0, 3, WebGlRenderingContext::FLOAT, false, 0, 0);
+        // Setup the camera matrix
+        self.gl_context.uniform_matrix4fv_with_f32_array(
+            Some(&projection_matrix),
+            false,
+            &self.camera.projection_matrix,
+        );
 
-        self.gl_context.clear_color(0.0, 1.0, 0.0, 1.0);
-        self.gl_context.clear(WebGlRenderingContext::COLOR_BUFFER_BIT);
+        let mut cube = Cube::new(&self.gl_context);
+
+        cube.translate(2.0, 0.0, -6.0);
+        cube.rotate(rotation, rotation, rotation * 0.8);
+
+        let mut cube2 = Cube::new(&self.gl_context);
+        cube2.translate(-2.0, 0.0, -6.0);
+        cube2.rotate(rotation, 0.0, rotation * 0.2);
+
+        let mut offset = cube.draw(&self.gl_context, program, 0.0);
+        offset += cube2.draw(&self.gl_context, program, 0.0);
 
         Ok(JsValue::from("Success!"))
     }
 }
+
 

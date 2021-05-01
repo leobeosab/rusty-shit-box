@@ -29,5 +29,6 @@ npm start
 
 Navigate to [localhost:8080](http://localhost:8080)
 
-And then you should see triangle with a color palette that would make even the Hulk upset
-![Ugly Triangle](readme/ugly_triangle.PNG)
+Now you should see a damn fine pair of cubes just spinning
+The low FPS is a result of the .gif format
+![Spining Cubes](readme/demo.gif)

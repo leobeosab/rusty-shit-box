@@ -96,11 +96,11 @@ impl Engine {
 
         let mut cube = Cube::new(&self.gl_context);
 
-        cube.transform.translate(2.0, 0.0, -6.0);
+        cube.transform.translate(3.0, 0.0, -16.0);
         cube.transform.rotate(rotation, rotation, rotation * 0.8);
 
         let mut cube2 = Cube::new(&self.gl_context);
-        cube2.transform.translate(-2.0, 0.0, -6.0);
+        cube2.transform.translate(-3.0, 0.0, -16.0);
         cube2.transform.rotate(rotation, 0.0, rotation * 0.2);
         cube2.transform.scale(2.0, 2.0, 2.0 );
 

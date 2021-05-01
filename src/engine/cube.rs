@@ -1,9 +1,10 @@
 use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlBuffer};
 use gl_matrix::{mat4};
+use crate::engine::components::transform::*;
 
 pub struct Cube {
     buffers: Buffers,
-    matrix: [f32; 16],
+    pub transform: Transform,
 }
 
 impl Cube {
@@ -12,7 +13,7 @@ impl Cube {
 
         Cube {
             buffers,
-            matrix: mat4::create(),
+            transform: Transform::new(None, None, None),
         }
     }
 
@@ -50,7 +51,7 @@ impl Cube {
         context.uniform_matrix4fv_with_f32_array(
             Some(&model_view_matrix),
             false,
-            &self.matrix
+            &self.transform.matrix
         );
 
         context.draw_elements_with_f64(
@@ -62,47 +63,9 @@ impl Cube {
 
         36 as f64
     }
-
-    pub fn rotate(&mut self, x: f32, y: f32, z: f32) {
-        let mut clone = self.matrix.clone();
-
-        mat4::rotate(
-            &mut self.matrix,
-            &mut clone,
-            x,
-            &[1.0, 0.0, 0.0]
-        );
-
-        clone = self.matrix.clone();
-
-        mat4::rotate(
-            &mut self.matrix,
-            &mut clone,
-            y,
-            &[0.0, 1.0, 0.0]
-        );
-
-        clone = self.matrix.clone();
-
-        mat4::rotate(
-            &mut self.matrix,
-            &mut clone,
-            z,
-            &[0.0, 0.0, 1.0]
-        );
-    }
-
-    pub fn translate(&mut self, x: f32, y: f32, z: f32) {
-       let mut clone = self.matrix.clone();
-
-      mat4::translate(
-          &mut self.matrix,
-          &mut clone,
-          &[x, y, z]
-      );
-    }
 }
 
+/// Cheaky cheat method until I get object loading in
 fn init_buffers(context: &WebGlRenderingContext) -> Result<Buffers, String> {
     // Setup the positions buffer
 

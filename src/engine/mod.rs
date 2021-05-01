@@ -1,6 +1,7 @@
 pub(crate) mod shaders;
 mod camera;
 mod cube;
+mod components;
 
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlBuffer};
@@ -95,12 +96,13 @@ impl Engine {
 
         let mut cube = Cube::new(&self.gl_context);
 
-        cube.translate(2.0, 0.0, -6.0);
-        cube.rotate(rotation, rotation, rotation * 0.8);
+        cube.transform.translate(2.0, 0.0, -6.0);
+        cube.transform.rotate(rotation, rotation, rotation * 0.8);
 
         let mut cube2 = Cube::new(&self.gl_context);
-        cube2.translate(-2.0, 0.0, -6.0);
-        cube2.rotate(rotation, 0.0, rotation * 0.2);
+        cube2.transform.translate(-2.0, 0.0, -6.0);
+        cube2.transform.rotate(rotation, 0.0, rotation * 0.2);
+        cube2.transform.scale(2.0, 2.0, 2.0 );
 
         let mut offset = cube.draw(&self.gl_context, program, 0.0);
         offset += cube2.draw(&self.gl_context, program, 0.0);

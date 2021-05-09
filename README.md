@@ -31,4 +31,5 @@ Navigate to [localhost:8080](http://localhost:8080)
 
 Now you should see a damn fine pair of cubes just spinning
 The low FPS is a result of the .gif format
+
 ![Spining Cubes](readme/demo.gif)

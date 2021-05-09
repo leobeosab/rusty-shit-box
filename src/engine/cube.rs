@@ -1,6 +1,6 @@
 use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlBuffer};
 use gl_matrix::{mat4};
-use crate::engine::components::transform::*;
+use crate::components::transform::*;
 
 pub struct Cube {
     buffers: Buffers,

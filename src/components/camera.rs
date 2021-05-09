@@ -9,13 +9,23 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(aspect_ratio: f32, clip_near: f32, clip_far: f32, fov: f32) -> Camera {
-        Camera {
+    pub fn new(aspect_ratio: f32, clip_near: f32, clip_far: f32, fov: f32) -> Self {
+        Self {
             projection_matrix: generate_projection_matrix(aspect_ratio, clip_near, clip_far, fov),
             aspect_ratio,
             clip_near,
             clip_far,
             fov
+        }
+    }
+
+    pub fn default() -> Self {
+        Self {
+            projection_matrix: generate_projection_matrix(1.0, 45.0, 110.0, 45.0),
+            aspect_ratio: 1.0,
+            clip_near: 1.0,
+            clip_far: 110.0,
+            fov: 45.0,
         }
     }
 

@@ -9,6 +9,8 @@ use std::collections::HashMap;
 use gl_matrix::mat4;
 use crate::engine::camera::Camera;
 use crate::engine::cube::Cube;
+use crate::log;
+use wasm_bindgen::closure::Closure;
 
 pub struct Engine {
     pub(crate) gl_context: WebGlRenderingContext,
@@ -17,29 +19,44 @@ pub struct Engine {
 }
 
 impl Engine {
-     pub(crate) fn initialize_game_engine() -> Result<Engine, JsValue> {
-        let document = web_sys::window().unwrap().document().unwrap();
-        let canvas = document.get_element_by_id("canvas").unwrap();
-        let canvas: web_sys::HtmlCanvasElement = canvas.dyn_into::<web_sys::HtmlCanvasElement>()?;
+     pub(crate) fn initialize_game_engine() -> Engine {
+         let document = web_sys::window().unwrap().document().unwrap();
+         let canvas = document.get_element_by_id("canvas").unwrap();
+         let canvas: web_sys::HtmlCanvasElement = canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
 
-        let context = canvas
-            .get_context("webgl")?
-            .unwrap()
-            .dyn_into::<WebGlRenderingContext>()?;
+         let context = canvas
+             .get_context("webgl").unwrap()
+             .unwrap()
+             .dyn_into::<WebGlRenderingContext>().unwrap();
 
-        context.viewport(0, 0, canvas.width() as i32, canvas.height() as i32);
+         context.viewport(0, 0, canvas.width() as i32, canvas.height() as i32);
 
-        let camera = Camera::new(1.0, 0.1, 100.0, 45.0);
+         let camera = Camera::new(canvas.width() as f32 / canvas.height() as f32, 0.1, 100.0, 45.0);
 
-        if true {
-            Ok(Engine {
-                gl_context: context,
-                camera,
-                shaders: HashMap::new(),
-            })
-        } else {
-            Err(JsValue::from("fuck me".to_string()))
-        }
+         let mut engine = Engine {
+                 gl_context: context,
+                 camera,
+                 shaders: HashMap::new(),
+         };
+
+         engine.set_resize_handler();
+
+         engine
+     }
+
+    fn set_resize_handler(&mut self) {
+        log!("resize handler");
+        let resize_function = Closure::wrap(Box::new(move || {
+            let canvas = web_sys::window().unwrap().document().unwrap().get_element_by_id("canvas").unwrap().dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
+            let context = canvas.get_context("webgl").unwrap().unwrap().dyn_into::<WebGlRenderingContext>().unwrap();
+            context.viewport(0, 0, canvas.width() as i32, canvas.height() as i32);
+            self.camera.update_aspect_ratio(canvas.width() as f32 / canvas.height() as f32);
+            log!("Resize!");
+        }) as Box<dyn FnMut()>);
+
+        web_sys::window().unwrap().set_onresize(Some(resize_function.as_ref().unchecked_ref()));
+
+        resize_function.forget();
     }
 
     pub(crate) fn initialize_shaders(&mut self, shader_name: &str, frag_source: &str, vert_source: &str) {

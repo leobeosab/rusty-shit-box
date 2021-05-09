@@ -18,6 +18,10 @@ impl Camera {
             fov
         }
     }
+
+    pub fn update_aspect_ratio(&mut self, aspect_ratio: f32) {
+        self.projection_matrix = generate_projection_matrix(aspect_ratio, self.clip_near, self.clip_far, self.fov);
+    }
 }
 
 fn generate_projection_matrix(aspect_ratio: f32, clip_near: f32, clip_far: f32, fov: f32) -> [f32; 16] {

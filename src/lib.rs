@@ -22,9 +22,8 @@ impl Application {
     pub fn new() -> Application {
         console_error_panic_hook::set_once();
 
-        let mut engine = Engine::initialize_game_engine().expect("rip");
+        let mut engine: Engine = Engine::initialize_game_engine();
         log!("Created engine and WebGL context");
-        // TODO:// put the error handling back
         engine.initialize_shaders("simple_shader", include_str!("./shaders/frag.fs"), include_str!("./shaders/vert.vs"));
         log!("initialized simple_shader");
 
